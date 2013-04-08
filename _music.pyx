@@ -23,11 +23,13 @@ def spectrum(est,
 
 	for thx in xrange(0,vtheta.shape[0]-1):
 		for phx in xrange(0,vphi.shape[0]-1):
-			# make cartesian
-			propvec[0] = sin(vtheta[thx]) * cos(vphi[phx])
-			propvec[1] = sin(vtheta[thx]) * sin(vphi[phx])
-			propvec[2] = cos(vtheta[thx])
+			# get propogation vector a(th,ph)
+			propvec[0] = -sin(vtheta[thx]) * cos(vphi[phx])
+			propvec[1] = -sin(vtheta[thx]) * sin(vphi[phx])
+			propvec[2] = -cos(vtheta[thx])
+			# steering matrix 
 			steermtx = np.asmatrix(np.dot(antennas,propvec))
+			# Pmusic
 			result[thx,phx] = 1.0 / (steermtx.H * metric * steermtx)
 
 	return result
