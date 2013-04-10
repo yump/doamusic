@@ -38,7 +38,6 @@ class Estimator:
 
 		#slice the noise space
 		self.noisespace = self.eigvec[:,:self.noisedim]
-		print("noisespace size:\t{}".format(self.noisespace.shape))
 		self.sigspace = self.eigvec[:,self.noisedim:]
 
 	def eigplot():
@@ -100,5 +99,4 @@ def covar(samples):
 
 def _pmusic(metric,antennas,theta,phi):
 	steer = sp.dot(antennas,util.aoa2prop_scalar(theta,phi))
-	#print("ants:\t{}\nsteer:\t{}\nmetric:\t{}".format(antennas.shape,steer.shape,metric.shape))
 	return 1/sp.dot(sp.dot(steer.conj(),metric,),steer)
