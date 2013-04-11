@@ -39,6 +39,7 @@ class Estimator:
 		#slice the noise space
 		self.noisespace = self.eigvec[:,:self.noisedim]
 		self.sigspace = self.eigvec[:,self.noisedim:]
+		print("Noise space dimension: {}".format(self.noisespace.shape))
 
 	def eigplot():
 		"""
@@ -64,12 +65,14 @@ def spectrum(est,theta,phi):
 	phi : numpy.ndarray, 1 dimensional
 		Values of phi for which to generate the spectrum.
 	"""
+	pmusic = _music.pmusic
 	ants = est.antennas
-	metric = sp.dot(est.noisespace,est.noisespace.T.conj())
+	metric = sp.atleast_2d(sp.dot(est.noisespace,est.noisespace.T.conj()))
 	result = np.empty((len(theta),len(phi)))
+	ipart = 0.0
 	for i,th in enumerate(theta):
 		for j,ph in enumerate(phi):
-			result[i,j] = _pmusic(metric,ants,th,ph)
+			result[i,j] = pmusic(metric,ants,th,ph)
 	return result
 
 def doasearch(est,thetaspan,phispan,iterations=4):
@@ -98,5 +101,5 @@ def covar(samples):
 	return ( (samples.H * samples) / samples.shape[0] )
 
 def _pmusic(metric,antennas,theta,phi):
-	steer = sp.dot(antennas,util.aoa2prop_scalar(theta,phi))
-	return 1/sp.dot(sp.dot(steer.conj(),metric,),steer)
+	steer = sp.exp(1j*sp.dot(antennas,util.aoa2prop_scalar(theta,phi)))
+	return 1/sp.dot(sp.dot(steer.conj(),metric),steer).real

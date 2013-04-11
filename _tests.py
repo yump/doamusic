@@ -15,19 +15,19 @@ front = circarray + [1,0,0]
 back = circarray - [1,0,0]
 triplecircarray = sp.concatenate((front,circarray,back))
 
-ants = circarray
+ants = triplecircarray
 nsamp = 32
 snr = 20
 
 s1 = util.makesamples(ants,pi/2,0,nsamp,snr)
-s2 = util.makesamples(ants,pi/2 + sp.rand()-.5,sp.randn()-.5,nsamp,snr)
+s2 = util.makesamples(ants,pi/2 + sp.randn()/2,sp.randn()/2,nsamp,snr)
 
 samples = s2
 
 R = music.covar(samples)
 est = music.Estimator(ants,R,nsignals=2)
 
-def spectest(n=64):
+def spectest(n=256):
 	t = time()
 	spec = music.spectrum(est,sp.linspace(0,pi,n),sp.linspace(0,2*pi,n))
 	elapsed = time() - t
@@ -35,7 +35,9 @@ def spectest(n=64):
 	sp.misc.imsave("music-spectrum.png",spec)
 	return spec
 
-
 def doatest():
 	raise NotImplementedError()
+
+if __name__ == '__main__':
+	_ = spectest()
 

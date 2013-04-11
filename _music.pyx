@@ -1,35 +1,25 @@
+import numpy as np
 cimport numpy as np
 cimport cython
 from libc.math cimport sin,cos
 
-def spectrum(est,
-		np.ndarray[double,ndim=1] vtheta,
-		np.ndarray[double,ndim=1] vphi):
+@cython.boundscheck(False)
+@cython.wraparound(False)
+
+def pmusic(np.ndarray[complex,ndim=2] metric not None,
+	       np.ndarray[double,ndim=2] antennas not None,
+	       double theta,
+	       double phi):
 
 	# preallocate
-	cdef np.ndarray[double,ndim=2] result
-	result = np.empty(( vtheta.shape[0],vphi.shape[0] ))
 	cdef np.ndarray[double,ndim=1] propvec = np.empty(3)
-	steermtx = np.asmatrix(np.empty(est.antennas.shape[0]))
 
-	# slurp needed data
-	cdef np.ndarray[double,ndim=2] antennas = est.antennas 
-	noisespace = est.noisespace
+	# get propogation vector a(th,ph)
+	propvec[0] = -sin(theta) * cos(phi)
+	propvec[1] = -sin(theta) * sin(phi)
+	propvec[2] = -cos(theta)
+	# steering matrix 
+	steer = np.exp(1j*np.dot(antennas,propvec))
+	# Pmusic
+	return 1.0 / np.dot( np.dot(steer.conj(),metric ), steer).real
 
-	# precalculate associable multiplication
-	metric = noisespace * noisespace.H
-
-	cdef int thx,phx
-
-	for thx in xrange(0,vtheta.shape[0]-1):
-		for phx in xrange(0,vphi.shape[0]-1):
-			# get propogation vector a(th,ph)
-			propvec[0] = -sin(vtheta[thx]) * cos(vphi[phx])
-			propvec[1] = -sin(vtheta[thx]) * sin(vphi[phx])
-			propvec[2] = -cos(vtheta[thx])
-			# steering matrix 
-			steermtx = np.asmatrix(np.dot(antennas,propvec))
-			# Pmusic
-			result[thx,phx] = 1.0 / (steermtx.H * metric * steermtx)
-
-	return result
