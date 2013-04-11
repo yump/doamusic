@@ -32,7 +32,7 @@ est = music.Estimator(ants,R,nsignals=2)
 
 def spectest(n=256):
 	t = time()
-	spec = music.spectrum(est,sp.linspace(0,pi,n),sp.linspace(0,2*pi,n))
+	spec = music.spectrum(est,(0,pi,n),(0,2*pi,n))
 	elapsed = time() - t
 	print("spectrum calculation time: {}".format(elapsed))
 	return spec
@@ -46,7 +46,10 @@ if __name__ == '__main__':
 	elif sys.argv[1] == "profile":
 		cProfile.run('_ = spectest(128)',"spectrum.gprofile")
 	elif sys.argv[1] == "spectrum":
+		spec = spectest(512)
 		sp.misc.imsave("music-spectrum.png",spec/np.max(spec))
-		spec = spectest()
+	else:
+		print("Bad arguments to _tests.py")
+		exit(1)
 	
 
