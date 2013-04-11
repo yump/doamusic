@@ -1,11 +1,13 @@
 from __future__ import absolute_import, division, print_function
-import music
+import cProfile
+import sys
+from time import time
 import numpy as np
 import scipy as sp
-from scipy import pi
 import scipy.misc
+from scipy import pi
+import music
 import util
-from time import time
 
 # 16 element unit circle in the y-z plane
 antx = sp.arange(16)
@@ -33,12 +35,18 @@ def spectest(n=256):
 	spec = music.spectrum(est,sp.linspace(0,pi,n),sp.linspace(0,2*pi,n))
 	elapsed = time() - t
 	print("spectrum calculation time: {}".format(elapsed))
-	sp.misc.imsave("music-spectrum.png",spec/np.max(spec))
 	return spec
 
 def doatest():
 	raise NotImplementedError()
 
 if __name__ == '__main__':
-	_ = spectest()
+	if sys.argv[1] == "check":
+		pass
+	elif sys.argv[1] == "profile":
+		cProfile.run('_ = spectest(128)',"spectrum.gprofile")
+	elif sys.argv[1] == "spectrum":
+		sp.misc.imsave("music-spectrum.png",spec/np.max(spec))
+		spec = spectest()
+	
 
