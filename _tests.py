@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 import music
+import numpy as np
 import scipy as sp
 from scipy import pi
 import scipy.misc
@@ -17,12 +18,12 @@ triplecircarray = sp.concatenate((front,circarray,back))
 
 ants = triplecircarray
 nsamp = 32
-snr = 20
+snr = 40
 
 s1 = util.makesamples(ants,pi/2,0,nsamp,snr)
 s2 = util.makesamples(ants,pi/2 + sp.randn()/2,sp.randn()/2,nsamp,snr)
 
-samples = s2
+samples = s2 + s1
 
 R = music.covar(samples)
 est = music.Estimator(ants,R,nsignals=2)
@@ -32,7 +33,7 @@ def spectest(n=256):
 	spec = music.spectrum(est,sp.linspace(0,pi,n),sp.linspace(0,2*pi,n))
 	elapsed = time() - t
 	print("spectrum calculation time: {}".format(elapsed))
-	sp.misc.imsave("music-spectrum.png",spec)
+	sp.misc.imsave("music-spectrum.png",spec/np.max(spec))
 	return spec
 
 def doatest():
