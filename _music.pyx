@@ -7,14 +7,11 @@ from libc.math cimport sin,cos
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def pmusic(np.ndarray[complex,ndim=2] metric not None,
-	       np.ndarray[double,ndim=2] antennas not None,
-	       double theta,
-	       double phi):
-
-	# preallocate
-	cdef np.ndarray[double,ndim=1] propvec = np.empty(3)
-
+cpdef double pmusic(np.ndarray[complex,ndim=2] metric,
+	                np.ndarray[double,ndim=2] antennas,
+					np.ndarray[double,ndim=1] propvec, #reusable buffer
+	                double theta,
+	                double phi):
 	# get propogation vector a(th,ph)
 	propvec[0] = -sin(theta) * cos(phi)
 	propvec[1] = -sin(theta) * sin(phi)
@@ -23,4 +20,21 @@ def pmusic(np.ndarray[complex,ndim=2] metric not None,
 	steer = np.exp(1j*np.dot(antennas,propvec))
 	# Pmusic
 	return 1.0 / steer.conj().dot(metric).dot(steer).real
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def spectrum(np.ndarray[complex,ndim=2] metric,
+	         np.ndarray[double,ndim=2] antennas,
+			 np.ndarray[double,ndim=2] out,
+	         double thlo, double thstep, Py_ssize_t thsz,
+	         double phlo, double phstep, Py_ssize_t phsz
+	         ):
+	# reusable buffer for propogation vectors
+	cdef np.ndarray[double,ndim=1] propvec = np.empty(3)
+	cdef Py_ssize_t i,j
+	for i in range(thsz):
+		th = thlo + i*thstep
+		for j in range(phsz):
+			ph = phlo + j*phstep
+			out[i,j] = pmusic(metric,antennas,propvec,th,ph)
 

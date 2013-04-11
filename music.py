@@ -49,31 +49,66 @@ class Estimator:
 		"""
 		pass
 
-def spectrum(est,theta,phi):
+def spectrum(est,(theta_lo,theta_hi,theta_sz),(phi_lo,phi_hi,phi_sz)):
 	"""
-	Generate a MUSIC pseudospectrum on the cartesian product of theta and
-	phi.  The result is a len(theta) x len(phi) real array.
+	Generate a MUSIC pseudospectrum on the region specified. The result 
+	is a theta_sz x phi_sz real numpy.ndarray. Range specifications are
+	inclusive, like linspace.
 
 	Parameters
 	----------
 	est : Estimator
 		input data
 	
-	theta : numpy.ndarray, 1 dimensional
-		Values of theta for which to generate the spectrum.
-	
-	phi : numpy.ndarray, 1 dimensional
-		Values of phi for which to generate the spectrum.
+	theta_lo,phi_lo : float
+		Specify the top-left [0,0] corner of the result.
+
+	theta_hi,phi_hi : float
+		Specify the bottom-right [theta_sz-1,phi_sz-1] corner of the result.
+
+	theta_sz, phi_sz : int
+		Specify the size of the result
 	"""
-	pmusic = _music.pmusic
+	# Wraps either _spectrum or _music.spectrum and provides parallel
+	# evaluation.
+
+	# precalculate static arguments and prepare output array
 	ants = est.antennas
 	metric = sp.atleast_2d(sp.dot(est.noisespace,est.noisespace.T.conj()))
-	result = np.empty((len(theta),len(phi)))
-	ipart = 0.0
-	for i,th in enumerate(theta):
-		for j,ph in enumerate(phi):
-			result[i,j] = pmusic(metric,ants,th,ph)
+	result = np.empty((theta_sz,phi_sz))
+
+	# step sizes
+	thstep = (theta_hi-theta_lo)/(theta_sz-1)
+	phstep = (phi_hi-phi_lo)/(phi_sz-1)
+
+	_music.spectrum(
+			metric,
+			ants,
+			result,
+			theta_lo,thstep,theta_sz,
+			phi_lo,phstep,phi_sz
+			)
 	return result
+
+def _spectrum(metric,
+	          antennas,
+	          out,
+			  thlo,thstep,thsz,
+			  phlo,phstep,phsz
+			  ):
+	# Lower-level spectrum calculator with preprocessed arguments and 
+	# pass-by-reference output array, for easier implementation with
+	# cython and being farmed out to multiple processes. (The problem is
+	# embarassingly parallel.
+	assert out.shape == (thsz,phsz)
+	pmusic = _music.pmusic
+	for i in xrange(thsz):
+		th = thlo + i*thstep
+		for j in xrange(phsz):
+			ph = phlo + j*phstep
+			out[i,j] = _pmusic(metric,antennas,th,ph)
+
+
 
 def doasearch(est,thetaspan,phispan,iterations=4):
 	raise NotImplementedError()
