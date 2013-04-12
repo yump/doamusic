@@ -7,6 +7,7 @@ import scipy as sp
 import scipy.misc
 from scipy import pi
 import music
+import _music
 import util
 
 # 16 element unit circle in the y-z plane
@@ -40,14 +41,19 @@ def spectest(n=256):
 def doatest():
 	raise NotImplementedError()
 
+def cspec_error(n=64):
+	specpy = music.spectrum(est,(0,pi,n),(0,2*pi,n),method=music._spectrum)
+	specc = music.spectrum(est,(0,pi,n),(0,2*pi,n),method=_music.spectrum)
+	return sp.mean(abs(specc-specpy))
+
 if __name__ == '__main__':
-	if sys.argv[1] == "check":
-		pass
-	elif sys.argv[1] == "profile":
+	if sys.argv[1] == "profile":
 		cProfile.run('_ = spectest(128)',"spectrum.gprofile")
 	elif sys.argv[1] == "spectrum":
 		spec = spectest(512)
 		sp.misc.imsave("music-spectrum.png",spec/np.max(spec))
+	elif sys.argv[1] == "check":
+		print("Mean absolute deviation from python: {}".format(cspec_error()))
 	else:
 		print("Bad arguments to _tests.py")
 		exit(1)

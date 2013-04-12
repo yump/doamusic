@@ -49,7 +49,11 @@ class Estimator:
 		"""
 		pass
 
-def spectrum(est,(theta_lo,theta_hi,theta_sz),(phi_lo,phi_hi,phi_sz)):
+def spectrum(est,
+		     (theta_lo,theta_hi,theta_sz),
+			 (phi_lo,phi_hi,phi_sz),
+			 method=_music.spectrum
+			 ):
 	"""
 	Generate a MUSIC pseudospectrum on the region specified. The result 
 	is a theta_sz x phi_sz real numpy.ndarray. Range specifications are
@@ -81,13 +85,13 @@ def spectrum(est,(theta_lo,theta_hi,theta_sz),(phi_lo,phi_hi,phi_sz)):
 	thstep = (theta_hi-theta_lo)/(theta_sz-1)
 	phstep = (phi_hi-phi_lo)/(phi_sz-1)
 
-	_music.spectrum(
-			metric,
-			ants,
-			result,
-			theta_lo,thstep,theta_sz,
-			phi_lo,phstep,phi_sz
-			)
+	method(
+		   metric,
+		   ants,
+	       result,
+		   theta_lo,thstep,theta_sz,
+	       phi_lo,phstep,phi_sz
+	)
 	return result
 
 def _spectrum(metric,
@@ -101,7 +105,6 @@ def _spectrum(metric,
 	# cython and being farmed out to multiple processes. (The problem is
 	# embarassingly parallel.
 	assert out.shape == (thsz,phsz)
-	pmusic = _music.pmusic
 	for i in xrange(thsz):
 		th = thlo + i*thstep
 		for j in xrange(phsz):
@@ -136,5 +139,5 @@ def covar(samples):
 	return ( (samples.H * samples) / samples.shape[0] )
 
 def _pmusic(metric,antennas,theta,phi):
-	steer = sp.exp(1j*sp.dot(antennas,util.aoa2prop_scalar(theta,phi)))
-	return 1/sp.dot(sp.dot(steer.conj(),metric),steer).real
+	steer = sp.exp( 1j*antennas.dot(util.aoa2prop_scalar(theta,phi)) )
+	return 1.0 / steer.conj().dot(metric).dot(steer).real
