@@ -1,0 +1,9 @@
+Required Debian packages:
+
+python-scipy
+python-numpy
+cython
+
+Developmental Dependencies:
+
+runsnakerun
