@@ -80,9 +80,14 @@ def spectrum(est,
     # Wraps either _spectrum or _music.spectrum and provides parallel
     # evaluation.
 
-    # precalculate static arguments and prepare output array
-    ants = est.antennas
-    metric = sp.atleast_2d(sp.dot(est.noisespace,est.noisespace.T.conj()))
+    # precalculate static arguments as comlpex double with contiguous
+    # arrangement (BLAS friendly) and prepare output array
+    ants = sp.ascontiguousarray(est.antennas.astype(complex))
+    metric = sp.ascontiguousarray(
+                sp.atleast_2d(
+                    est.noisespace.dot( est.noisespace.T.conj() )
+                             ).astype(complex)
+                                 )
     result = np.empty((theta_sz,phi_sz))
 
     # step sizes
