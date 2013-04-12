@@ -86,8 +86,8 @@ def spectrum(est,
     metric = sp.ascontiguousarray(
                 sp.atleast_2d(
                     est.noisespace.dot( est.noisespace.T.conj() )
-                             ).astype(complex)
-                                 )
+                ).astype(complex)
+             )
     result = np.empty((theta_sz,phi_sz))
 
     # step sizes
