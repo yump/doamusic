@@ -72,6 +72,10 @@ def spectrum(est,
 
 	theta_sz, phi_sz : int
 		Specify the size of the result
+
+	method : callable
+		Choose between the python or cython low-level implementations.  Used
+		to check correctness.
 	"""
 	# Wraps either _spectrum or _music.spectrum and provides parallel
 	# evaluation.
