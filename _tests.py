@@ -32,30 +32,30 @@ R = music.covar(samples)
 est = music.Estimator(ants,R,nsignals=2)
 
 def spectest(n=256):
-	t = time()
-	spec = music.spectrum(est,(0,pi,n),(0,2*pi,n))
-	elapsed = time() - t
-	print("spectrum calculation time: {}".format(elapsed))
-	return spec
+    t = time()
+    spec = music.spectrum(est,(0,pi,n),(0,2*pi,n))
+    elapsed = time() - t
+    print("spectrum calculation time: {}".format(elapsed))
+    return spec
 
 def doatest():
-	raise NotImplementedError()
+    raise NotImplementedError()
 
 def cspec_error(n=64):
-	specpy = music.spectrum(est,(0,pi,n),(0,2*pi,n),method=music._spectrum)
-	specc = music.spectrum(est,(0,pi,n),(0,2*pi,n),method=_music.spectrum)
-	return sp.mean(abs(specc-specpy))
+    specpy = music.spectrum(est,(0,pi,n),(0,2*pi,n),method=music._spectrum)
+    specc = music.spectrum(est,(0,pi,n),(0,2*pi,n),method=_music.spectrum)
+    return sp.mean(abs(specc-specpy))
 
 if __name__ == '__main__':
-	if sys.argv[1] == "profile":
-		cProfile.run('_ = spectest(128)',"spectrum.gprofile")
-	elif sys.argv[1] == "spectrum":
-		spec = spectest(512)
-		sp.misc.imsave("music-spectrum.png",spec/np.max(spec))
-	elif sys.argv[1] == "check":
-		print("Mean absolute deviation from python: {}".format(cspec_error()))
-	else:
-		print("Bad arguments to _tests.py")
-		exit(1)
-	
+    if sys.argv[1] == "profile":
+        cProfile.run('_ = spectest(128)',"spectrum.gprofile")
+    elif sys.argv[1] == "spectrum":
+        spec = spectest(512)
+        sp.misc.imsave("music-spectrum.png",spec/np.max(spec))
+    elif sys.argv[1] == "check":
+        print("Mean absolute deviation from python: {}".format(cspec_error()))
+    else:
+        print("Bad arguments to _tests.py")
+        exit(1)
+    
 
