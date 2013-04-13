@@ -103,25 +103,6 @@ def spectrum(est,
     )
     return result
 
-def _spectrum(metric,
-              antennas,
-              out,
-              thlo,thstep,thsz,
-              phlo,phstep,phsz
-              ):
-    # Lower-level spectrum calculator with preprocessed arguments and 
-    # pass-by-reference output array, for easier implementation with
-    # cython and being farmed out to multiple processes. (The problem is
-    # embarassingly parallel.
-    assert out.shape == (thsz,phsz)
-    for i in xrange(thsz):
-        th = thlo + i*thstep
-        for j in xrange(phsz):
-            ph = phlo + j*phstep
-            out[i,j] = _pmusic(metric,antennas,th,ph)
-
-
-
 def doasearch(est,thetaspan,phispan,iterations=4):
     raise NotImplementedError()
 
@@ -150,3 +131,20 @@ def covar(samples):
 def _pmusic(metric,antennas,theta,phi):
     steer = sp.exp( 1j*antennas.dot(util.aoa2prop_scalar(theta,phi)) )
     return 1.0 / steer.conj().dot(metric).dot(steer).real
+
+def _spectrum(metric,
+              antennas,
+              out,
+              thlo,thstep,thsz,
+              phlo,phstep,phsz
+              ):
+    # Lower-level spectrum calculator with preprocessed arguments and 
+    # pass-by-reference output array, for easier implementation with
+    # cython and being farmed out to multiple processes. (The problem is
+    # embarassingly parallel.
+    assert out.shape == (thsz,phsz)
+    for i in xrange(thsz):
+        th = thlo + i*thstep
+        for j in xrange(phsz):
+            ph = phlo + j*phstep
+            out[i,j] = _pmusic(metric,antennas,th,ph)
