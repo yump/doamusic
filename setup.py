@@ -7,8 +7,8 @@ import numpy
 _music = Extension(
     name = "_music",
     sources = ["cmusic.c","_music.pyx"],
-    include_dirs = ['cblas','m',numpy.get_include()],
-    libraries = ["m","cblas"],
+    include_dirs = ['blas','m',numpy.get_include()],
+    libraries = ["m","blas"],
     extra_compile_args = ["-std=c99"])
                 
 setup(ext_modules=[_music],
