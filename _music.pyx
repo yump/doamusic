@@ -35,23 +35,6 @@ cdef extern from "cmusic.h":
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef double pmusic(np.ndarray[complex,ndim=2] metric,
-                    np.ndarray[complex,ndim=2] antennas,
-                    np.ndarray[complex,ndim=1] propvec, #reusable buffer
-                    np.ndarray[complex,ndim=1] steer,   #reusable buffer
-                    double theta,
-                    double phi):
-    # get propogation vector a(th,ph)
-    propvec[0] = -sin(theta) * cos(phi)
-    propvec[1] = -sin(theta) * sin(phi)
-    propvec[2] = -cos(theta)
-    # steering matrix 
-    steer = np.exp(1j*np.dot(antennas,propvec))
-    # Pmusic
-    return 1.0 / steer.conj().dot(metric).dot(steer).real
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def spectrum(np.ndarray[complex,ndim=2] metric,
              np.ndarray[complex,ndim=2] ants,
              np.ndarray[double,ndim=2] out,

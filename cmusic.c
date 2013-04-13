@@ -19,7 +19,6 @@
 #include <math.h>
 #include <complex.h>
 #include <cblas.h>
-#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 

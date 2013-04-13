@@ -20,12 +20,6 @@ import numpy as np
 import scipy as sp
 import math
 
-def linspace(begin,end,n):
-    """This linspace is a generator. n=0 and n=1 are errors."""
-    step = (end - begin)/(n-1)
-    for i in range(n):
-        yield begin + i*step
-
 def aoa2prop(th,ph):
     """Propogation vectors from angles of arrival. Result is Nx3."""
     return np.array((-np.sin(th)*np.cos(ph), #x

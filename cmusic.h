@@ -16,13 +16,11 @@
  *   You should have received a copy of the GNU General Public License
  *   along with doamusic.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <math.h>
-#include <complex.h>
-#include <cblas.h>
-#include <assert.h>
 
 #ifndef CPMUSIC_H
 #define CPMUSIC_H
+
+#include <complex.h>
 
 double cpmusic(
                double complex *metric,                              // sz NxN
