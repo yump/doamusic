@@ -6,6 +6,16 @@ from libc.math cimport sin,cos
 
 np.import_array()
 
+cdef extern from "cmusic.h":
+    double cpmusic(
+                   double complex *metric,
+                   double complex *antennas,
+                   double complex *work,   
+                   size_t N,
+                   double theta,
+                   double phi
+                  )
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cpdef double pmusic(np.ndarray[complex,ndim=2] metric,
@@ -31,15 +41,18 @@ def spectrum(np.ndarray[complex,ndim=2] metric,
              double thlo, double thstep, Py_ssize_t thsz,
              double phlo, double phstep, Py_ssize_t phsz
              ):
-    # reusable buffer for propogation vectors
-    cdef np.ndarray[complex,ndim=1] propvec = np.empty(3,complex)
-    cdef np.ndarray[complex,ndim=1] steer = np.empty(ants.shape[0],complex)
+    # allocate workspace buffer
+    cdef np.ndarray[complex,ndim=1] work = np.empty(ants.shape[0]*2 +3,complex)
     cdef Py_ssize_t i,j
     for i in range(thsz):
         th = thlo + i*thstep
         for j in range(phsz):
             ph = phlo + j*phstep
-            out[i,j] = pmusic(metric,ants,propvec,steer,th,ph)
+            out[i,j] = cpmusic(&metric[0,0],
+                               &ants[0,0],
+                               &work[0],
+                               ants.shape[0],
+                               th,ph)
 
     
 
