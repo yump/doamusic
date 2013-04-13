@@ -16,6 +16,6 @@ profile: all
 spectrum: all
 	python _tests.py spectrum
 
-_music.so: _music.pyx setup.py
+_music.so: _music.pyx setup.py cmusic.c cmusic.h
 	python setup.py build_ext --inplace
 
