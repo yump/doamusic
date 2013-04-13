@@ -6,6 +6,9 @@ clean:
 distclean:
 	git clean -fd
 
+debug:
+	python setup.py build_ext --inplace -D DEBUG
+
 check: all
 	python _tests.py check
 

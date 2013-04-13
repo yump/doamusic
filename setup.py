@@ -4,9 +4,13 @@ from Cython.Distutils import build_ext
 
 import numpy
 
-ext = Extension("_music", ["_music.pyx"],
-    include_dirs = ['m',numpy.get_include()])
+_music = Extension(
+    name = "_music",
+    sources = ["cmusic.c","_music.pyx"],
+    include_dirs = ['cblas','m',numpy.get_include()],
+    libraries = ["m","cblas"],
+    extra_compile_args = ["-std=c99"])
                 
-setup(ext_modules=[ext],
+setup(ext_modules=[_music],
       cmdclass = {'build_ext': build_ext})
 
