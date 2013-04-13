@@ -35,7 +35,7 @@ double cpmusic(
         // steervec <- antennas * propvec
         cblas_zgemv(CblasRowMajor,
                     CblasNoTrans,
-                    N,3,&one,antennas,3,
+                    N,3,&one,antennas,3, //3 because [x,y,z]
                     propvec,1,
                     &zero,steervec,1);
         //convert from phase to steering vector exp(j*steervec)

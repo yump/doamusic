@@ -41,8 +41,13 @@ def spectrum(np.ndarray[complex,ndim=2] metric,
              double thlo, double thstep, Py_ssize_t thsz,
              double phlo, double phstep, Py_ssize_t phsz
              ):
-    # allocate workspace buffer
+    # Allocate workspace buffer.
     cdef np.ndarray[complex,ndim=1] work = np.empty(ants.shape[0]*2 +3,complex)
+    
+    # Ensure inputs contiguous.
+    metric = np.ascontiguousarray(metric)
+    ants = np.ascontiguousarray(ants)
+
     cdef Py_ssize_t i,j
     for i in range(thsz):
         th = thlo + i*thstep
