@@ -1,9 +1,11 @@
 Required Debian packages:
 
+libatlas3-base (Or any other cblas library. I only test with ATLAS though.)
 python-scipy
 python-numpy
 cython
 
 Developmental Dependencies:
 
+libatlas-dev
 runsnakerun
