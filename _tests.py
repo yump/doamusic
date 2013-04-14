@@ -51,7 +51,7 @@ est = music.Estimator(ants,R,nsignals=2)
 
 def spectest(n=256):
     t = time()
-    spec = music.spectrum(est,(0,pi,n),(0,2*pi,n))
+    spec = music.spectrum(est,(n,n))
     elapsed = time() - t
     print("spectrum calculation time: {}".format(elapsed))
     return spec
@@ -60,8 +60,8 @@ def doatest():
     raise NotImplementedError()
 
 def cspec_error(n=64):
-    specpy = music.spectrum(est,(0,pi,n),(0,2*pi,n),method=music._spectrum)
-    specc = music.spectrum(est,(0,pi,n),(0,2*pi,n),method=_music.spectrum)
+    specpy = music.spectrum(est,(n,n),method=music._spectrum)
+    specc = music.spectrum(est,(n,n),method=_music.spectrum)
     return sp.mean(abs(specc-specpy))
 
 if __name__ == '__main__':
