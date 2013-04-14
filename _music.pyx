@@ -116,21 +116,21 @@ def hillclimb(
     old_merit = cpmusic(
         &metric[0,0],
         &ants[0,0],
-        &work[0,0],
+        &work[0],
         ants.shape[0],
         old[0],old[1]
     )
     new_merit = old_merit
     
     while step > tol:
-        for dim in len(old):
+        for dim in range(len(old)):
             for delta in (-step, +step):
                 # perturb one of the dimensions of the point
                 cur = old[:dim] + (old[dim]+delta,) + old[dim+1:]
                 cur_merit = cpmusic(
                     &metric[0,0],
                     &ants[0,0],
-                    &work[0,0],
+                    &work[0],
                     ants.shape[0],
                     cur[0],cur[1]
                 )

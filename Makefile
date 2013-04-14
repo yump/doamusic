@@ -22,6 +22,9 @@ spectrum: build
 timetrial: build
 	python _tests.py timetrial
 
+doasearch: build
+	python _tests.py doasearch
+
 _music.so: _music.pyx setup.py cmusic.c cmusic.h
 	python setup.py build_ext --inplace
 

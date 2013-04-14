@@ -151,7 +151,7 @@ class Estimator:
         """
         out = []
         iterations = 0
-        while len(out) < nsignals and iterations < max_iterations:
+        while len(out) < self.nsignals and iterations < max_iterations:
             #pick a random starting point in the domain
             thstart = self.thlo + sp.rand()*(self.thhi-self.thlo)
             phstart = self.phlo + sp.rand()*(self.phhi-self.phlo)

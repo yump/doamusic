@@ -42,8 +42,10 @@ ants = triplecircarray
 nsamp = 32
 snr = 40
 
-s1 = util.makesamples(ants,pi/2,0,nsamp,snr)
-s2 = util.makesamples(ants,pi/2 + sp.randn()/2,sp.randn()/2,nsamp,snr)
+s1_aoa = (pi/2,0)
+s2_aoa = (pi/2 + sp.randn()/2, sp.randn()/2)
+s1 = util.makesamples(ants,s1_aoa[0],s1_aoa[1],nsamp,snr)
+s2 = util.makesamples(ants,s2_aoa[0],s2_aoa[1],nsamp,snr)
 
 samples = s2 + s1
 
@@ -58,7 +60,17 @@ def spectest(n=256):
     return spec
 
 def doatest():
-    raise NotImplementedError()
+    s1_est = music.Estimator(ants,music.covar(s1),nsignals=1)
+    s2_est = music.Estimator(ants,music.covar(s2),nsignals=1)
+    # s1
+    s1_res = s1_est.doasearch()[0]
+    s1_err = tuple( sp.array(s1_res) - sp.array(s1_aoa) )
+    print("Error for s1 (aoa: {}) is {}".format(s1_aoa,s1_err))
+    # s2
+    s2_res = s2_est.doasearch()[0]
+    s2_err = tuple( sp.array(s2_res) - sp.array(s2_aoa) )
+    print("Error for s2 (aoa: {}) is {}".format(s2_aoa,s2_err))
+    
 
 def cspec_error(n=64):
     specpy = est.spectrum((n,n),method=music._spectrum)
@@ -95,6 +107,8 @@ if __name__ == '__main__':
         print("Times:")
         for i in timetrial().items():
             print("{}\t{}".format(*i))
+    elif sys.argv[1] == "doasearch":
+        doatest()
     else:
         print("Bad arguments to _tests.py")
         exit(1)
