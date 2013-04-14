@@ -105,46 +105,44 @@ class Estimator:
         """
         pass
 
-def spectrum(est,(theta_sz,phi_sz),method=_music.spectrum):
-    """
-    Generate a MUSIC pseudospectrum on the region specified. The result 
-    is a theta_sz x phi_sz real numpy.ndarray. Range specifications are
-    inclusive, like linspace.
+    def spectrum(self,(theta_sz,phi_sz),method=_music.spectrum):
+        """
+        Generate a MUSIC pseudospectrum on the estimator's domain. The result
+        is a theta_sz x phi_sz real numpy.ndarray. The domain is a closed
+        interval, like linspace.
 
-    Parameters
-    ----------
-    est : Estimator
-        input data
+        Parameters
+        ----------
+        theta_sz, phi_sz : int
+            Specify the size of the result
 
-    theta_sz, phi_sz : int
-        Specify the size of the result
+        method : callable
+            Choose between the python or cython low-level implementations.
+            Used to check correctness.
+        """
+        # Wraps either _spectrum or _music.spectrum and provides parallel
+        # evaluation.
 
-    method : callable
-        Choose between the python or cython low-level implementations.  Used
-        to check correctness.
-    """
-    # Wraps either _spectrum or _music.spectrum and provides parallel
-    # evaluation.
+        # precalculate static arguments as comlpex double and prepare output
+        # array
+        ants = self.antennas.astype(complex)
+        metric = sp.atleast_2d(
+                    self.noisespace.dot( self.noisespace.T.conj() )
+                 ).astype(complex)
+        result = np.empty((theta_sz,phi_sz))
 
-    # precalculate static arguments as comlpex double and prepare output array
-    ants = est.antennas.astype(complex)
-    metric = sp.atleast_2d(
-                est.noisespace.dot( est.noisespace.T.conj() )
-             ).astype(complex)
-    result = np.empty((theta_sz,phi_sz))
+        # step sizes
+        thstep = (self.thhi-self.thlo)/(theta_sz-1)
+        phstep = (self.phhi-self.phlo)/(phi_sz-1)
 
-    # step sizes
-    thstep = (est.thhi-est.thlo)/(theta_sz-1)
-    phstep = (est.phhi-est.phlo)/(phi_sz-1)
-
-    method(
-       metric,
-       ants,
-       result,
-       est.thlo,thstep,theta_sz,
-       est.phlo,phstep,phi_sz
-    )
-    return result
+        method(
+           metric,
+           ants,
+           result,
+           self.thlo,thstep,theta_sz,
+           self.phlo,phstep,phi_sz
+        )
+        return result
 
 def doasearch(est,thetaspan,phispan,iterations=4):
     raise NotImplementedError()
