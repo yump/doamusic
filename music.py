@@ -31,11 +31,13 @@ class Estimator:
     A class to carry state for estimating direction of arrival (DOA) 
     with the Multiple SIgnal Classification algorithm.
     """
-    def __init__(self,
-                 antennas,
-                 covariance,
-                 field_of_view=((0,pi),(-pi,pi)),
-                 nsignals=None):
+    def __init__(
+        self,
+        antennas,
+        covariance,
+        field_of_view=((0,pi),(-pi,pi)),
+        nsignals=None
+    ):
         """
         Set up an Estimator, for making pseudospectrum plots and finding
         directions of arrival.
@@ -103,10 +105,7 @@ class Estimator:
         """
         pass
 
-def spectrum(est,
-             (theta_sz,phi_sz),
-             method=_music.spectrum
-             ):
+def spectrum(est,(theta_sz,phi_sz),method=_music.spectrum):
     """
     Generate a MUSIC pseudospectrum on the region specified. The result 
     is a theta_sz x phi_sz real numpy.ndarray. Range specifications are
@@ -139,11 +138,11 @@ def spectrum(est,
     phstep = (est.phhi-est.phlo)/(phi_sz-1)
 
     method(
-           metric,
-           ants,
-           result,
-           est.thlo,thstep,theta_sz,
-           est.phlo,phstep,phi_sz
+       metric,
+       ants,
+       result,
+       est.thlo,thstep,theta_sz,
+       est.phlo,phstep,phi_sz
     )
     return result
 
@@ -176,12 +175,13 @@ def _pmusic(metric,antennas,theta,phi):
     steer = sp.exp( 1j*antennas.dot(-util.aoa2prop_scalar(theta,phi)) )
     return 1.0 / steer.conj().dot(metric).dot(steer).real
 
-def _spectrum(metric,
-              antennas,
-              out,
-              thlo,thstep,thsz,
-              phlo,phstep,phsz
-              ):
+def _spectrum(
+    metric,
+    antennas,
+    out,
+    thlo,thstep,thsz,
+    phlo,phstep,phsz
+):
     # Lower-level spectrum calculator with preprocessed arguments and 
     # pass-by-reference output array, for easier implementation with
     # cython and being farmed out to multiple processes. (The problem is
