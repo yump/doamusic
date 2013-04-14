@@ -15,6 +15,7 @@ be usable for any array of coherent sensors.
 
 Performance
 ----
-Critical computations are performed using the BLAS in compiled native code, and
-non-crtical computations use Numpy.  On 2006 hardware, Doamusic can render a
-512x512 pseudospectrum image for a 64 element array in around 4.5 seconds.
+Critical computations are multithreaded and using the BLAS in compiled native
+code, and non-crtical computations use Numpy.  On 2006 hardware, Doamusic can
+render a 512x512 pseudospectrum image for a 64 element array in around 2.3
+seconds.
