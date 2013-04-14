@@ -17,6 +17,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with doamusic.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
+from numpy import pi
 cimport numpy as np
 cimport cython
 from cython.parallel import parallel, prange
@@ -44,15 +45,15 @@ def spectrum(
     double thlo, double thstep, Py_ssize_t thsz,
     double phlo, double phstep, Py_ssize_t phsz
 ):
-    cdef Py_ssize_t N = ants.shape[0],i,j
+    cdef Py_ssize_t i,j
     
     # Ensure inputs contiguous.
     metric = np.ascontiguousarray(metric)
     ants = np.ascontiguousarray(ants)
 
     with nogil, parallel():
-        # Allocate thread-local workspace buffer.
-        work = <complex *> malloc(sizeof(complex)*(2*N+3))
+        # Allocate thread-local workspace buffer. (see cmusic.c for size info)
+        work = <complex *> malloc(sizeof(complex)*(2*ants.shape[0]+3))
         if work == NULL:
             abort()
 
@@ -69,3 +70,78 @@ def spectrum(
                 )
         free(work)
 
+def hillclimb(
+    np.ndarray[complex,ndim=2] metric,
+    np.ndarray[complex,ndim=2] ants,
+    double theta, double phi,
+    double tol,
+    double step=pi/8.0,
+    double scale=0.5
+):
+    """
+    Maximizer using the hill-climbing algorithm to find a local maximum of
+    pmusic.
+
+    Parameters
+    ----------
+    metric : NxN complex numpy.ndarray
+        Common subexpression in pmusic calculation.  Equal to the product of
+        the noisespace matrix with it's hermitian transpose.
+
+    ants : Nx3 complex numpy.ndarray
+        Physical positions of the antennas.  The Nth row is the [x,y,z]
+        location of the Nth antenna.
+
+    theta,phi : double
+        Where to start the search.
+
+    tol : double
+        Return when the step size drops below this. 
+
+    step : double
+        Initial step size.
+
+    scale : double
+        When none of the neighbors are better with the current step size,
+        multiply the step size by this and try some more.
+    """
+    # Allocate workspace buffer. (see cmusic.c for size info)
+    work = <complex *> malloc(sizeof(complex)*(2*ants.shape[0]+3))
+    if work == NULL:
+        abort()
+    
+    # Set up intial state
+    old = (theta,phi)
+    new = old
+    old_merit = cpmusic(
+        &metric[0,0],
+        &ants[0,0],
+        &work[0,0],
+        ants.shape[0],
+        old[0],old[1]
+    )
+    new_merit = old_merit
+    
+    while step > tol:
+        for dim in len(old):
+            for delta in (-step, +step):
+                # perturb one of the dimensions of the point
+                cur = old[:dim] + (old[dim]+delta,) + old[dim+1:]
+                cur_merit = cpmusic(
+                    &metric[0,0],
+                    &ants[0,0],
+                    &work[0,0],
+                    ants.shape[0],
+                    cur[0],cur[1]
+                )
+                if cur_merit > new_merit and cur_merit > old_merit:
+                    new = cur
+                    new_merit = cur_merit
+        # reduce the step size if we didn't find a better point
+        if new == old:
+            step = step * scale
+        else:
+            old = new
+
+    free(work)
+    return old

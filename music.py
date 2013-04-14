@@ -68,10 +68,9 @@ class Estimator:
 
         """
         # Accept and validate antennas.
-        self.antennas = np.array(antennas)
+        self.antennas = np.array(antennas).astype(complex)
         self.numel = antennas.shape[0]
         assert self.antennas.shape[1] == 3      # we are operating in R3
-        assert self.antennas.dtype == 'float64' # spatial coordinates
         # Accept and validate covariance.
         self.covar = np.array(covariance)
         assert self.covar.shape == (self.numel,self.numel)
@@ -96,6 +95,12 @@ class Estimator:
         self.noisespace = self.eigvec[:,:self.noisedim]
         self.sigspace = self.eigvec[:,self.noisedim:]
         print("Noise space dimension: {}".format(self.noisespace.shape))
+
+        # Calculate the noise metric used to evaluate pmusic, to avoid
+        # repetition
+        self.metric = sp.atleast_2d(
+                    self.noisespace.dot( self.noisespace.T.conj() )
+                 ).astype(complex)
 
     def eigplot():
         """
@@ -125,10 +130,6 @@ class Estimator:
 
         # precalculate static arguments as comlpex double and prepare output
         # array
-        ants = self.antennas.astype(complex)
-        metric = sp.atleast_2d(
-                    self.noisespace.dot( self.noisespace.T.conj() )
-                 ).astype(complex)
         result = np.empty((theta_sz,phi_sz))
 
         # step sizes
@@ -136,16 +137,41 @@ class Estimator:
         phstep = (self.phhi-self.phlo)/(phi_sz-1)
 
         method(
-           metric,
-           ants,
+           self.metric,
+           self.antennas,
            result,
            self.thlo,thstep,theta_sz,
            self.phlo,phstep,phi_sz
         )
         return result
 
-def doasearch(est,thetaspan,phispan,iterations=4):
-    raise NotImplementedError()
+    def doasearch(self,max_iterations=2**8,tol=pi/2**10):
+        """
+        Find directions of arrival within specified tolerance.
+        """
+        out = []
+        iterations = 0
+        while len(out) < nsignals and iterations < max_iterations:
+            #pick a random starting point in the domain
+            thstart = self.thlo + sp.rand()*(self.thhi-self.thlo)
+            phstart = self.phlo + sp.rand()*(self.phhi-self.phlo)
+            localmax = _music.hillclimb(
+                self.metric,
+                self.antennas,
+                thstart,phstart,
+                tol
+            )
+            for point in out:
+                # Check distance from ones we've already found.
+                if sp.sqrt(sp.dot(localmax,point)) < tol:
+                    break
+            else:
+                # It's not one of the ones we'ver already found.
+                out.append(localmax)
+            iterations += 1
+        return out
+
+
 
 def covar(samples):
     """
