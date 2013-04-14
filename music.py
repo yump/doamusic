@@ -173,7 +173,7 @@ def covar(samples):
     return ( (samples.H * samples) / samples.shape[0] )
 
 def _pmusic(metric,antennas,theta,phi):
-    steer = sp.exp( 1j*antennas.dot(util.aoa2prop_scalar(theta,phi)) )
+    steer = sp.exp( 1j*antennas.dot(-util.aoa2prop_scalar(theta,phi)) )
     return 1.0 / steer.conj().dot(metric).dot(steer).real
 
 def _spectrum(metric,
