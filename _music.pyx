@@ -19,7 +19,9 @@
 import numpy as np
 cimport numpy as np
 cimport cython
+from cython.parallel import parallel, prange
 from libc.math cimport sin,cos
+from libc.stdlib cimport abort, malloc, free
 
 np.import_array()
 
@@ -31,7 +33,7 @@ cdef extern from "cmusic.h":
                    size_t N,
                    double theta,
                    double phi
-                  )
+                  ) nogil
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -41,23 +43,26 @@ def spectrum(np.ndarray[complex,ndim=2] metric,
              double thlo, double thstep, Py_ssize_t thsz,
              double phlo, double phstep, Py_ssize_t phsz
              ):
-    # Allocate workspace buffer.
-    cdef np.ndarray[complex,ndim=1] work = np.empty(ants.shape[0]*2 +3,complex)
+    cdef Py_ssize_t N = ants.shape[0],i,j
     
     # Ensure inputs contiguous.
     metric = np.ascontiguousarray(metric)
     ants = np.ascontiguousarray(ants)
 
-    cdef Py_ssize_t i,j
-    for i in range(thsz):
-        th = thlo + i*thstep
-        for j in range(phsz):
-            ph = phlo + j*phstep
-            out[i,j] = cpmusic(&metric[0,0],
-                               &ants[0,0],
-                               &work[0],
-                               ants.shape[0],
-                               th,ph)
+    with nogil, parallel():
+        # Allocate thread-local workspace buffer.
+        work = <complex *> malloc(sizeof(complex)*(2*N+3))
+        if work == NULL:
+            abort()
 
-    
+        for i in prange(thsz,schedule='static'):
+            th = thlo + i*thstep
+            for j in range(phsz):
+                ph = phlo + j*phstep
+                out[i,j] = cpmusic(&metric[0,0],
+                                   &ants[0,0],
+                                   &work[0],
+                                   ants.shape[0],
+                                   th,ph)
+        free(work)
 

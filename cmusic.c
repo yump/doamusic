@@ -46,9 +46,9 @@ double cpmusic(
         /*
          * generate the steering vector
          */
-        propvec[0] = -sin(theta)*cos(phi); // x
-        propvec[1] = -sin(theta)*sin(phi); // y
-        propvec[2] = -cos(theta);          // z
+        propvec[0] = sin(theta)*cos(phi); // x
+        propvec[1] = sin(theta)*sin(phi); // y
+        propvec[2] = cos(theta);          // z
         // steervec <- antennas * propvec
         cblas_zgemv(CblasRowMajor,
                     CblasNoTrans,
