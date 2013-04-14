@@ -1,4 +1,4 @@
-all: _music.so
+build: _music.so
 
 clean:
 	rm -r _music.so _music.c
@@ -9,15 +9,18 @@ distclean:
 debug:
 	python setup.py build_ext --inplace -D DEBUG
 
-check: all
+check: build
 	python _tests.py check
 
-profile: all
+profile: build
 	python _tests.py profile
 	nohup runsnake "spectrum.gprofile" 2>&1 >/dev/null &
 
-spectrum: all
+spectrum: build
 	python _tests.py spectrum
+
+timetrial: build
+	python _tests.py timetrial
 
 _music.so: _music.pyx setup.py cmusic.c cmusic.h
 	python setup.py build_ext --inplace

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #   Copyright 2013 Russell Haley
 #   (Please add yourself if you make changes)
 #
