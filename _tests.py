@@ -62,16 +62,38 @@ def doatest():
 def cspec_error(n=64):
     specpy = music.spectrum(est,(n,n),method=music._spectrum)
     specc = music.spectrum(est,(n,n),method=_music.spectrum)
+    sp.misc.imsave("c-spectrum.png",specc/np.max(specc))
+    sp.misc.imsave("python-spectrum.png",specpy/np.max(specpy))
     return sp.mean(abs(specc-specpy))
+
+def timetrial(reps=5):
+    result = {}
+    for i in range(5,10): # 32-512
+        times = []
+        for j in range(reps):
+            t = time()
+            _ = music.spectrum(est,(2**i,2**i))
+            times.append(time() - t)
+        result[2**i] = min(times)
+    return result
+
 
 if __name__ == '__main__':
     if sys.argv[1] == "profile":
         cProfile.run('_ = spectest(128)',"spectrum.gprofile")
     elif sys.argv[1] == "spectrum":
-        spec = spectest(512)
+        if len(sys.argv) == 3:
+            size = int(sys.argv[2])
+        else:
+            size = 512
+        spec = spectest(size)
         sp.misc.imsave("music-spectrum.png",spec/np.max(spec))
     elif sys.argv[1] == "check":
         print("Mean absolute deviation from python: {}".format(cspec_error()))
+    elif sys.argv[1] == "timetrial":
+        print("Times:")
+        for i in timetrial().items():
+            print("{}\t{}".format(*i))
     else:
         print("Bad arguments to _tests.py")
         exit(1)
