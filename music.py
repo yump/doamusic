@@ -22,6 +22,7 @@ import numpy as np
 import itertools
 from scipy import linalg
 from scipy import misc
+from scipy import pi
 import util
 import _music
 
@@ -30,16 +31,51 @@ class Estimator:
     A class to carry state for estimating direction of arrival (DOA) 
     with the Multiple SIgnal Classification algorithm.
     """
-    def __init__(self, antennas, covariance, nsignals=None):
+    def __init__(self,
+                 antennas,
+                 covariance,
+                 field_of_view=((0,pi),(-pi,pi)),
+                 nsignals=None):
         """
-        Get an Estimator.
+        Set up an Estimator, for making pseudospectrum plots and finding
+        directions of arrival.
+
+        Parameters
+        ----------
+        antennas : sequence of of N sequences of 3, or Nx3 numpy array
+            Describes the relative physical positions of the array elements.
+            Units are wavelength/(2*pi).
+
+        covariance : NxN numpy array
+           The joint second moment matrix.  The ij entry is the expectation of
+           the product of the conjugated signal from the ith element with the
+           signal from the jth element. Equal to mean[sample.H * sample].
+
+        field_of_view : ((th_lo,th_hi),(ph_lo,ph_hi))
+            Restrict the domain of DoA searches and pseudospectrum renderings.
+            This is helpful to avoid aliasing from 2-dimensional arrays, or to
+            avoid projection distortion in the pseudospectrum image by
+            rendering only a subsection of the sphere.  Theta and phi are the
+            inclination angle from the Z axis and azimuth angle from the X
+            axis.
+
+        nsignals : integer < N
+            The number of incident signals, if known. Otherwise, we will try to
+            estimate this from the magnitudes of the eigenvalues of the
+            covariance matrix.
+
         """
-        assert antennas.shape[1] == 3
-        assert antennas.dtype == 'float64'
-        self.antennas = antennas
+        # Accept and validate antennas.
+        self.antennas = np.array(antennas)
         self.numel = antennas.shape[0]
-        assert covariance.shape == (self.numel,self.numel)
-        self.covar = covariance
+        assert self.antennas.shape[1] == 3      # we are operating in R3
+        assert self.antennas.dtype == 'float64' # spatial coordinates
+        # Accept and validate covariance.
+        self.covar = np.array(covariance)
+        assert self.covar.shape == (self.numel,self.numel)
+        # Unpack field of view
+        self.thlo,self.thhi = field_of_view[0][0],field_of_view[0][1]
+        self.phlo,self.phhi = field_of_view[1][0],field_of_view[1][1]
 
         #Get the sorted eigenstructure
         self.eigval, self.eigvec = util.eigsort(linalg.eig(covariance))
@@ -68,8 +104,7 @@ class Estimator:
         pass
 
 def spectrum(est,
-             (theta_lo,theta_hi,theta_sz),
-             (phi_lo,phi_hi,phi_sz),
+             (theta_sz,phi_sz),
              method=_music.spectrum
              ):
     """
@@ -81,12 +116,6 @@ def spectrum(est,
     ----------
     est : Estimator
         input data
-    
-    theta_lo,phi_lo : float
-        Specify the top-left [0,0] corner of the result.
-
-    theta_hi,phi_hi : float
-        Specify the bottom-right [theta_sz-1,phi_sz-1] corner of the result.
 
     theta_sz, phi_sz : int
         Specify the size of the result
@@ -106,15 +135,15 @@ def spectrum(est,
     result = np.empty((theta_sz,phi_sz))
 
     # step sizes
-    thstep = (theta_hi-theta_lo)/(theta_sz-1)
-    phstep = (phi_hi-phi_lo)/(phi_sz-1)
+    thstep = (est.thhi-est.thlo)/(theta_sz-1)
+    phstep = (est.phhi-est.phlo)/(phi_sz-1)
 
     method(
            metric,
            ants,
            result,
-           theta_lo,thstep,theta_sz,
-           phi_lo,phstep,phi_sz
+           est.thlo,thstep,theta_sz,
+           est.phlo,phstep,phi_sz
     )
     return result
 
