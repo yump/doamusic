@@ -96,7 +96,8 @@ def timetrial(reps=5):
 
 if __name__ == '__main__':
     if sys.argv[1] == "profile":
-        cProfile.run('_ = spectest(128)',"spectrum.gprofile")
+        cProfile.run("_ = spectest(128)","spectrum.gprofile")
+        cProfile.run("_ = doatest()","doasearch.gprofile")
     elif sys.argv[1] == "spectrum":
         if len(sys.argv) == 3:
             size = int(sys.argv[2])

@@ -15,6 +15,7 @@ check: build
 profile: build
 	python _tests.py profile
 	nohup runsnake "spectrum.gprofile" 2>&1 >/dev/null &
+	nohup runsnake "doasearch.gprofile" 2>&1 >/dev/null &
 
 spectrum: build
 	python _tests.py spectrum
