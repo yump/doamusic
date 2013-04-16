@@ -65,7 +65,6 @@ class Estimator:
             The number of incident signals, if known. Otherwise, we will try to
             estimate this from the magnitudes of the eigenvalues of the
             covariance matrix.
-
         """
         # Accept and validate antennas.
         self.antennas = np.array(antennas).astype(complex)
@@ -145,30 +144,48 @@ class Estimator:
         )
         return result
 
-    def doasearch(self,max_iterations=2**8,tol=pi/2**10):
+    def doasearch(self,max_iterations=2**8,tol=pi/2**16):
         """
         Find directions of arrival within specified tolerance.
         """
         out = []
         iterations = 0
-        while len(out) < self.nsignals and iterations < max_iterations:
-            #pick a random starting point in the domain
-            thstart = self.thlo + sp.rand()*(self.thhi-self.thlo)
-            phstart = self.phlo + sp.rand()*(self.phhi-self.phlo)
-            localmax = _music.hillclimb(
+        # Try to find twice as many signals, so we get the aliases too.
+        while len(out) < self.nsignals*2 and iterations < max_iterations:
+            # track the number of iterations
+            iterations += 1
+            # Pick a random starting point on the sphere by taking the theta
+            # and phi coordinates of a random sample from the normal
+            # distribution (which is spherically symmetric).
+            thstart,phstart = util.cart2sph(sp.randn(3))[1:]
+            phstart = 0 + sp.rand()*pi
+            maxval,maxpoint = _music.hillclimb(
                 self.metric,
                 self.antennas,
                 thstart,phstart,
-                tol
+                2**(-80)
             )
-            for point in out:
+            for val,point in out:
                 # Check distance from ones we've already found.
-                if sp.sqrt(sp.dot(localmax,point)) < tol:
+                diff = sp.array(point) - sp.array(maxpoint)
+                if sp.sqrt(sp.dot(diff,diff)) < 2*tol:
                     break
             else:
-                # It's not one of the ones we'ver already found.
-                out.append(localmax)
-            iterations += 1
+                # It's not one of the ones we've already found.
+                out.append((maxval,maxpoint))
+        # Sort the signals by descending pmuisc amplitude
+        out.sort(key=lambda x: x[0], reverse=True)
+        # Filter the points outside the domain.
+        out = [ point for val,point in out 
+            if (
+                point[0] < self.thhi and
+                point[0] > self.thlo and
+                point[1] < self.phhi and
+                point[1] > self.phlo
+            )
+        ]
+        # Take the signals biggest (which should hopefully discard aliases).
+        out = out[:self.nsignals]
         return out
 
 

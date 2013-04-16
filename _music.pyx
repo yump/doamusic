@@ -142,6 +142,7 @@ def hillclimb(
             step = step * scale
         else:
             old = new
+            old_merit = new_merit
 
     free(work)
-    return old
+    return old_merit,old

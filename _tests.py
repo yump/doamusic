@@ -60,17 +60,20 @@ def spectest(n=256):
     return spec
 
 def doatest():
+    print("s1 is {}".format(s1_aoa))
+    print("s2 is {}".format(s2_aoa))
     s1_est = music.Estimator(ants,music.covar(s1),nsignals=1)
     s2_est = music.Estimator(ants,music.covar(s2),nsignals=1)
     # s1
     s1_res = s1_est.doasearch()[0]
     s1_err = tuple( sp.array(s1_res) - sp.array(s1_aoa) )
-    print("Error for s1 (aoa: {}) is {}".format(s1_aoa,s1_err))
+    print("Error for s1 is {}".format(s1_err))
     # s2
     s2_res = s2_est.doasearch()[0]
     s2_err = tuple( sp.array(s2_res) - sp.array(s2_aoa) )
-    print("Error for s2 (aoa: {}) is {}".format(s2_aoa,s2_err))
-    
+    print("Error for s2 is {}".format(s2_err))
+    # both signals
+    print("Both signals:\n{}".format(est.doasearch()))
 
 def cspec_error(n=64):
     specpy = est.spectrum((n,n),method=music._spectrum)

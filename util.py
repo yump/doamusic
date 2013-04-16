@@ -64,3 +64,72 @@ def eigsort(eigresult):
     ix = sp.argsort(abs(eigresult[0]))
     return ( eigresult[0][ix], eigresult[1][:,ix] )
 
+def sph2cart(sph):
+    """
+    Convert one or more spherical coordinates to cartesian.
+
+    Parameters
+    ----------
+    sph : shape 3 or Nx3 numpy.ndarray 
+        Spherical coordinates of the form (r,theta,phi), where theta is the
+        inclination angle from the Z axis and phi is the azimuth angle from the
+        X axis.
+
+    Returns
+    -------
+    cart : shape 3 or Nx3 numpy.ndarray
+        Cartesian coordinates of the form (x,y,z)
+    """
+    sph = np.atleast_2d(sph).T
+    x = sph[0] * np.sin(sph[1]) * np.cos(sph[2])
+    y = sph[0] * np.sin(sph[1]) * np.sin(sph[2])
+    z = sph[0] * sp.cos(sph[1])
+    cart = np.squeeze(np.array((x,y,z)).T)
+    return cart
+
+def cart2sph(cart):
+    """
+    Convert one or more cartesian coordinates to spherical.
+
+    Parameters
+    ----------
+    cart : shape 3 or Nx3 numpy.ndarray
+        Cartesian coordinates of the form (x,y,z)
+
+    Returns
+    -------
+    sph : shape 3 or Nx3 numpy.ndarray 
+        Spherical coordinates of the form (r,theta,phi), where theta is the
+        inclination angle from the Z axis and phi is the azimuth angle from the
+        X axis.
+    """
+    cart = np.atleast_2d(cart).T
+    r = np.sqrt(np.sum(cart**2,axis=0))
+    th = np.arctan2( np.sqrt(np.sum(cart[:2]**2,axis=0)), cart[2] )
+    ph = np.arctan2(cart[1],cart[0])
+    cart = np.squeeze(np.array((r,th,ph)).T)
+    return cart
+
+def reflect_aoa(aoa,plane_norm):
+    """
+    Reflect an angle of arrival across a plane.
+
+    Parameters
+    ----------
+    aoa : length 2 sequence
+        (theta,phi) describing angle of arrival.
+
+    plane_norm : length 2 sequence
+        (theta,phi) describing the vector normal to the plane across which you
+        are reflecting.
+
+    Returns
+    -------
+    reflected : length 2 seqence
+        aoa reclected across the plane described by plane_norm
+    """
+    aoa = sph2cart(1,*aoa)
+    plane_norm = sph2cart(1,*aoa)
+    perp = plane_norm * sp.dot(plane_norm,aoa) #perpendicular projection
+    reflected = cart2sph(aoa - 2*perp)
+    return reflected[1:] # discard r, since it's one
