@@ -51,6 +51,8 @@ def spectrum(
     metric = np.ascontiguousarray(metric)
     ants = np.ascontiguousarray(ants)
 
+    cdef double th,ph
+
     with nogil, parallel():
         # Allocate thread-local workspace buffer. (see cmusic.c for size info)
         work = <complex *> malloc(sizeof(complex)*(2*ants.shape[0]+3))
