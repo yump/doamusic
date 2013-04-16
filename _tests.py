@@ -100,7 +100,17 @@ if __name__ == '__main__':
         else:
             size = 512
         spec = spectest(size)
-        sp.misc.imsave("music-spectrum.png",spec/np.max(spec))
+        sp.misc.imsave("spectrum.png",spec/np.max(spec))
+        logspec = sp.log(spec/spec.min()) #positive only
+        sp.misc.imsave("spectrum-log.png",logspec/logspec.max())
+        # excluding the top 5%
+        q95 = sp.sort(spec,axis=None)[-np.floor(0.05*(size**2))]
+        lowspec = sp.clip(spec,0,q95)
+        logq95 = sp.sort(spec,axis=None)[-np.floor(0.05*(size**2))]
+        lowlogspec = sp.clip(logspec,0,logq95)
+        sp.misc.imsave("spectrum-log-lows.png",lowlogspec)
+        sp.misc.imsave("spectrum-lows.png",lowspec)
+
     elif sys.argv[1] == "check":
         print("Mean absolute deviation from python: {}".format(cspec_error()))
     elif sys.argv[1] == "timetrial":
