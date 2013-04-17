@@ -44,10 +44,15 @@ snr = 40
 
 s1_aoa = (pi/2,0)
 s2_aoa = (pi/2 + sp.randn()/2, sp.randn()/2)
-s1 = util.makesamples(ants,s1_aoa[0],s1_aoa[1],nsamp,snr)
-s2 = util.makesamples(ants,s2_aoa[0],s2_aoa[1],nsamp,snr)
+s1 = util.makesamples(ants,s1_aoa[0],s1_aoa[1],nsamp)
+s2 = util.makesamples(ants,s2_aoa[0],s2_aoa[1],nsamp)
 
 samples = s2 + s1
+samples = util.awgn(samples,snr)
+
+# add noise to s1 and s2
+s1 = util.awgn(s1,snr)
+s2 = util.awgn(s2,snr)
 
 R = music.covar(samples)
 est = music.Estimator(ants,R,nsignals=2)
@@ -66,14 +71,15 @@ def doatest():
     s2_est = music.Estimator(ants,music.covar(s2),nsignals=1)
     # s1
     s1_res = s1_est.doasearch()[0]
-    s1_err = tuple( sp.array(s1_res) - sp.array(s1_aoa) )
-    print("Error for s1 is {}".format(s1_err))
+    s1_err = sp.rad2deg(util.aoa_diff_rad(s1_res,s1_aoa))
+    print("s1: found {}, error {} deg".format(s1_res,s1_err))
     # s2
     s2_res = s2_est.doasearch()[0]
-    s2_err = tuple( sp.array(s2_res) - sp.array(s2_aoa) )
-    print("Error for s2 is {}".format(s2_err))
+    s2_err = sp.rad2deg(util.aoa_diff_rad(s2_res,s2_aoa))
+    print("s2: found {}, error {} deg".format(s2_res,s2_err))
     # both signals
-    print("Both signals:\n{}".format(est.doasearch()))
+    bothres = est.doasearch()
+    print("Both signals:\n{}".format(bothres))
 
 def cspec_error(n=64):
     specpy = est.spectrum((n,n),method=music._spectrum)
@@ -93,6 +99,15 @@ def timetrial(reps=5):
         result[2**i] = min(times)
     return result
 
+def indeptest(n):
+    R1 = music.covar(s1)
+    R2 = music.covar(s2)
+    s1spec = music.Estimator(ants,R1,nsignals=1).spectrum((n,n))
+    s2spec = music.Estimator(ants,R2,nsignals=1).spectrum((n,n))
+    bothspec = music.Estimator(ants,R,nsignals=2).spectrum((n,n))
+    sp.misc.imsave("s1spec.png",s1spec/s1spec.max())
+    sp.misc.imsave("s2spec.png",s2spec/s2spec.max())
+    sp.misc.imsave("bothspec.png",bothspec/bothspec.max())
 
 if __name__ == '__main__':
     if sys.argv[1] == "profile":
@@ -122,7 +137,10 @@ if __name__ == '__main__':
         for i in timetrial().items():
             print("{}\t{}".format(*i))
     elif sys.argv[1] == "doasearch":
+        indeptest(256)
         doatest()
+    elif sys.argv[1] == "indep":
+        indeptest(512)
     else:
         print("Bad arguments to _tests.py")
         exit(1)

@@ -54,7 +54,7 @@ def makesamples(antennas, theta, phi, num_samples=1, snr=120):
     phases = sp.dot(antennas,propvec)
     # add some random phase modulation so signals are uncorrelated
     phases = phases + sp.randn(num_samples,1)*0.1
-    return awgn(sp.exp(1j*phases),snr)
+    return sp.exp(1j*phases)
 
 def eigsort(eigresult):
     """
@@ -110,26 +110,13 @@ def cart2sph(cart):
     cart = np.squeeze(np.array((r,th,ph)).T)
     return cart
 
-def reflect_aoa(aoa,plane_norm):
+def aoa_diff_rad(aoa_a,aoa_b):
     """
-    Reflect an angle of arrival across a plane.
-
-    Parameters
-    ----------
-    aoa : length 2 sequence
-        (theta,phi) describing angle of arrival.
-
-    plane_norm : length 2 sequence
-        (theta,phi) describing the vector normal to the plane across which you
-        are reflecting.
-
-    Returns
-    -------
-    reflected : length 2 seqence
-        aoa reclected across the plane described by plane_norm
+    Calculate the difference between two angles of arrival, in radians.
     """
-    aoa = sph2cart(1,*aoa)
-    plane_norm = sph2cart(1,*aoa)
-    perp = plane_norm * sp.dot(plane_norm,aoa) #perpendicular projection
-    reflected = cart2sph(aoa - 2*perp)
-    return reflected[1:] # discard r, since it's one
+    # Prepend radius 1 and convert to cartesian.
+    cart_a = sph2cart( (1,) + tuple(aoa_a) )
+    cart_b = sph2cart( (1,) + tuple(aoa_b) )
+    # Property of dot product between vectors.
+    return sp.arccos(sp.dot(cart_a,cart_b))
+
