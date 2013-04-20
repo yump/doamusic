@@ -17,6 +17,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with doamusic.  If not, see <http://www.gnu.org/licenses/>.
 
+
 from __future__ import absolute_import, division, print_function
 import cProfile
 import sys
@@ -25,9 +26,14 @@ import numpy as np
 import scipy as sp
 import scipy.misc
 from scipy import pi
-import music
-import _music
-import util
+
+if __name__ == "__main__" and __package__ is None:
+    sys.path.append('..')
+    __package__ = "doamusic"
+import doamusic
+from . import music
+from . import _music
+from . import util
 
 # 16 element unit circle in the y-z plane
 antx = sp.arange(16)
@@ -109,6 +115,10 @@ def indeptest(n):
     sp.misc.imsave("s2spec.png",s2spec/s2spec.max())
     sp.misc.imsave("bothspec.png",bothspec/bothspec.max())
 
+def profile():
+    cProfile.run("_ = est.spectrum((512,512))","spectrum.gprofile")
+    cProfile.run("_ = doatest()","doasearch.gprofile")
+
 if __name__ == '__main__':
     if sys.argv[1] == "profile":
         cProfile.run("_ = spectest(128)","spectrum.gprofile")
@@ -129,7 +139,6 @@ if __name__ == '__main__':
         lowlogspec = sp.clip(logspec,0,logq95)
         sp.misc.imsave("spectrum-log-lows.png",lowlogspec)
         sp.misc.imsave("spectrum-lows.png",lowspec)
-
     elif sys.argv[1] == "check":
         print("Mean absolute deviation from python: {}".format(cspec_error()))
     elif sys.argv[1] == "timetrial":

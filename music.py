@@ -23,8 +23,8 @@ import itertools
 from scipy import linalg
 from scipy import misc
 from scipy import pi
-import util
-import _music
+from . import util
+from . import _music
 
 class Estimator:
     """
@@ -93,7 +93,7 @@ class Estimator:
         #slice the noise space
         self.noisespace = self.eigvec[:,:self.noisedim]
         self.sigspace = self.eigvec[:,self.noisedim:]
-        print("Noise space dimension: {}".format(self.noisespace.shape))
+        #DEBUG print("Noise space dimension: {}".format(self.noisespace.shape))
 
         # Calculate the noise metric used to evaluate pmusic, to avoid
         # repetition
@@ -186,6 +186,7 @@ class Estimator:
         ]
         # Take the signals biggest (which should hopefully discard aliases).
         out = out[:self.nsignals]
+        #DEBUG: print("Iterations: {}".format(iterations))
         return out
 
 
