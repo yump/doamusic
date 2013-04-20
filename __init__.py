@@ -1,1 +1,1 @@
-from music import *
+from doamusic.music import *

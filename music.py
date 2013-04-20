@@ -23,6 +23,11 @@ import itertools
 from scipy import linalg
 from scipy import misc
 from scipy import pi
+
+if __name__ == "__main__" and __package__ is None:
+    import sys
+    sys.path.append('..')
+    __package__ = "doamusic"
 from . import util
 from . import _music
 
@@ -109,7 +114,7 @@ class Estimator:
         """
         pass
 
-    def spectrum(self,(theta_sz,phi_sz),method=_music.spectrum):
+    def spectrum(self,shape,method=_music.spectrum):
         """
         Generate a MUSIC pseudospectrum on the estimator's domain. The result
         is a theta_sz x phi_sz real numpy.ndarray. The domain is a closed
@@ -117,8 +122,8 @@ class Estimator:
 
         Parameters
         ----------
-        theta_sz, phi_sz : int
-            Specify the size of the result
+        shape : (theta_sz, phi_sz)
+            Specify the dimensions of the result
 
         method : callable
             Choose between the python or cython low-level implementations.
@@ -126,6 +131,9 @@ class Estimator:
         """
         # Wraps either _spectrum or _music.spectrum and provides parallel
         # evaluation.
+
+        # Extract shape argument
+        theta_sz,phi_sz = shape
 
         # precalculate static arguments as comlpex double and prepare output
         # array
@@ -229,8 +237,8 @@ def _spectrum(
     # cython and being farmed out to multiple processes. (The problem is
     # embarassingly parallel.
     assert out.shape == (thsz,phsz)
-    for i in xrange(thsz):
+    for i in range(thsz):
         th = thlo + i*thstep
-        for j in xrange(phsz):
+        for j in range(phsz):
             ph = phlo + j*phstep
             out[i,j] = _pmusic(metric,antennas,th,ph)
