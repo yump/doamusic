@@ -73,7 +73,7 @@ class Estimator:
         """
         # Accept and validate antennas.
         self.antennas = np.array(antennas).astype(complex)
-        self.numel = antennas.shape[0]
+        self.numel = self.antennas.shape[0]
         assert self.antennas.shape[1] == 3      # we are operating in R3
         # Accept and validate covariance.
         self.covar = np.array(covariance)
