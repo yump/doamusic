@@ -51,7 +51,7 @@ class Estimator:
         ----------
         antennas : sequence of of N sequences of 3, or Nx3 numpy array
             Describes the relative physical positions of the array elements.
-            Units are wavelength/(2*pi).
+            Units are wavelength.
 
         covariance : NxN numpy array
            The joint second moment matrix.  The ij entry is the expectation of
@@ -72,7 +72,7 @@ class Estimator:
             covariance matrix.
         """
         # Accept and validate antennas.
-        self.antennas = np.array(antennas).astype(complex)
+        self.antennas = np.array(antennas).astype(complex) / (2*pi)
         self.numel = self.antennas.shape[0]
         assert self.antennas.shape[1] == 3      # we are operating in R3
         # Accept and validate covariance.
