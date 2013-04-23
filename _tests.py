@@ -50,12 +50,16 @@ gridarray = sp.array(
     [ (0,y,z) for y,z in itertools.product(range(-3,4),repeat=2) ]
 )
 
-ants = gridarray / 2
-nsamp = 32
-snr = 40
+# unit spacing linear
+linarray = sp.array( [ (0,y,0) for y in range(10) ] )
+
+ants = linarray * (4/4)
+nsamp = 1
+snr = 30
 
 s1_aoa = (pi/2,0)
-s2_aoa = (pi/2 + sp.randn()/2, sp.randn()/2)
+#s2_aoa = (pi/2 + sp.randn()/2, sp.randn()/2)
+s2_aoa = (pi/2, pi/4)
 s1 = util.makesamples(ants,s1_aoa[0],s1_aoa[1],nsamp)
 s2 = util.makesamples(ants,s2_aoa[0],s2_aoa[1],nsamp)
 
