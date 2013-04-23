@@ -72,7 +72,7 @@ class Estimator:
             covariance matrix.
         """
         # Accept and validate antennas.
-        self.antennas = np.array(antennas).astype(complex) / (2*pi)
+        self.antennas = np.array(antennas).astype(complex) * (2*pi)
         self.numel = self.antennas.shape[0]
         assert self.antennas.shape[1] == 3      # we are operating in R3
         # Accept and validate covariance.
