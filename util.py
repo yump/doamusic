@@ -50,6 +50,7 @@ def makesamples(antennas, theta, phi, num_samples=1, snr=120):
     """
     assert antennas.shape[1] == 3 # no single antennas, must be in R3
 
+    antennas = antennas / (2*sp.pi) # convert from wavelengths to radians
     propvec = aoa2prop(theta,phi)
     phases = sp.dot(antennas,propvec)
     # add some random phase modulation so signals are uncorrelated

@@ -22,6 +22,7 @@ from __future__ import absolute_import, division, print_function
 import cProfile
 import sys
 from time import time
+import itertools
 import numpy as np
 import scipy as sp
 import scipy.misc
@@ -44,7 +45,12 @@ front = circarray + [1,0,0]
 back = circarray - [1,0,0]
 triplecircarray = sp.concatenate((front,circarray,back))
 
-ants = triplecircarray
+# unit spacing grid (5x5)
+gridarray = sp.array( 
+    [ (0,y,z) for y,z in itertools.product(range(-3,4),repeat=2) ]
+)
+
+ants = gridarray / 2
 nsamp = 32
 snr = 40
 
