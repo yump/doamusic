@@ -26,6 +26,7 @@ import itertools
 import numpy as np
 import scipy as sp
 import scipy.misc
+import scipy.constants
 from scipy import pi
 
 if __name__ == "__main__" and __package__ is None:
@@ -53,8 +54,14 @@ gridarray = sp.array(
 # unit spacing linear
 linarray = sp.array( [ (0,y,0) for y in range(10) ] )
 
-ants = linarray * (4/4)
-nsamp = 1
+# random array as constructed
+randarray = sp.loadtxt("arrays/randarray.dat")*2.477e9/sp.constants.c
+
+# linear array as constructed
+ourlinarray = sp.loadtxt("arrays/linarray.dat")*2.477e9/sp.constants.c
+
+ants = linarray * (2/4)
+nsamp = 2
 snr = 30
 
 s1_aoa = (pi/2,0)
@@ -79,6 +86,17 @@ def spectest(n=256):
     elapsed = time() - t
     print("spectrum calculation time: {}".format(elapsed))
     return spec
+
+def sumspectest(dim=512,n=16):
+    accum = sp.zeros((dim,dim))
+    for i in range(n):
+        mys1 = util.makesamples(ants,s1_aoa[0],s1_aoa[1],nsamp)
+        mys2 = util.makesamples(ants,s2_aoa[0],s2_aoa[1],nsamp)
+        mysamples = mys2 + mys1
+        mysamples = util.awgn(mysamples,snr)
+        cov = music.covar(mysamples)
+        accum += music.Estimator(ants,cov,nsignals=2).spectrum((dim,dim))
+    sp.misc.imsave("accumspec.png",accum/accum.max())
 
 def doatest():
     print("s1 is {}".format(s1_aoa))
@@ -160,6 +178,8 @@ if __name__ == '__main__':
         doatest()
     elif sys.argv[1] == "indep":
         indeptest(512)
+    elif sys.argv[1] == "sumspec":
+        sumspectest(dim=512,n=int(sys.argv[2]))
     else:
         print("Bad arguments to _tests.py")
         exit(1)
