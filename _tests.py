@@ -33,9 +33,9 @@ if __name__ == "__main__" and __package__ is None:
     sys.path.append('..')
     __package__ = "doamusic"
 import doamusic
-from . import music
-from . import _music
-from . import util
+from doamusic import music
+from doamusic import _music
+from doamusic import util
 
 # 16 element unit circle in the y-z plane
 antx = sp.arange(16)
@@ -54,19 +54,20 @@ gridarray = sp.array(
 # unit spacing linear
 linarray = sp.array( [ (0,y,0) for y in range(10) ] )
 
-# random array as constructed
-randarray = sp.loadtxt("arrays/randarray.dat")*2.477e9/sp.constants.c
+# Arrays as constructed.
+wavelength = sp.constants.c/2.477e9
 
-# linear array as constructed
-ourlinarray = sp.loadtxt("arrays/linarray.dat")*2.477e9/sp.constants.c
+randarray = sp.loadtxt("arrays/randarray.dat")/wavelength
+ourlinarray = sp.loadtxt("arrays/linarray.dat")/wavelength
+ourcircarray = sp.loadtxt("arrays/circarray.dat")/wavelength
 
-ants = linarray * (2/4)
-nsamp = 2
-snr = 30
+ants = randarray
+nsamp = 21
+snr = -6
 
 s1_aoa = (pi/2,0)
 #s2_aoa = (pi/2 + sp.randn()/2, sp.randn()/2)
-s2_aoa = (pi/2, pi/4)
+s2_aoa = (pi/2+pi/6, -pi/6)
 s1 = util.makesamples(ants,s1_aoa[0],s1_aoa[1],nsamp)
 s2 = util.makesamples(ants,s2_aoa[0],s2_aoa[1],nsamp)
 
@@ -104,16 +105,21 @@ def doatest():
     s1_est = music.Estimator(ants,music.covar(s1),nsignals=1)
     s2_est = music.Estimator(ants,music.covar(s2),nsignals=1)
     # s1
+    t1 = time()
     s1_res = s1_est.doasearch()[0]
+    t1 = time() - t1
     s1_err = sp.rad2deg(util.aoa_diff_rad(s1_res,s1_aoa))
-    print("s1: found {}, error {} deg".format(s1_res,s1_err))
+    print("s1: found {} in {}s, error {} deg".format(s1_res,t1,s1_err))
     # s2
+    t2 = time()
     s2_res = s2_est.doasearch()[0]
+    t2 = time() - t2
     s2_err = sp.rad2deg(util.aoa_diff_rad(s2_res,s2_aoa))
-    print("s2: found {}, error {} deg".format(s2_res,s2_err))
+    print("s2: found {} in {}s, error {} deg".format(s2_res,t2,s2_err))
     # both signals
     bothres = est.doasearch()
     print("Both signals:\n{}".format(bothres))
+    # timing
 
 def cspec_error(n=64):
     specpy = est.spectrum((n,n),method=music._spectrum)
@@ -133,12 +139,12 @@ def timetrial(reps=5):
         result[2**i] = min(times)
     return result
 
-def indeptest(n):
+def indeptest(dim):
     R1 = music.covar(s1)
     R2 = music.covar(s2)
-    s1spec = music.Estimator(ants,R1,nsignals=1).spectrum((n,n))
-    s2spec = music.Estimator(ants,R2,nsignals=1).spectrum((n,n))
-    bothspec = music.Estimator(ants,R,nsignals=2).spectrum((n,n))
+    s1spec = music.Estimator(ants,R1,nsignals=1).spectrum(dim)
+    s2spec = music.Estimator(ants,R2,nsignals=1).spectrum(dim)
+    bothspec = music.Estimator(ants,R,nsignals=2).spectrum(dim)
     sp.misc.imsave("s1spec.png",s1spec/s1spec.max())
     sp.misc.imsave("s2spec.png",s2spec/s2spec.max())
     sp.misc.imsave("bothspec.png",bothspec/bothspec.max())
@@ -174,10 +180,10 @@ if __name__ == '__main__':
         for i in timetrial().items():
             print("{}\t{}".format(*i))
     elif sys.argv[1] == "doasearch":
-        indeptest(256)
+        indeptest((256,256))
         doatest()
     elif sys.argv[1] == "indep":
-        indeptest(512)
+        indeptest((512,1024))
     elif sys.argv[1] == "sumspec":
         sumspectest(dim=512,n=int(sys.argv[2]))
     else:
