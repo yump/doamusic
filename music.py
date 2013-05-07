@@ -159,7 +159,7 @@ class Estimator:
         out = []
         iterations = 0
         # Try to find twice as many signals, so we get the aliases too.
-        while len(out) < self.nsignals*2 and iterations < max_iterations:
+        while iterations < max_iterations:
             # track the number of iterations
             iterations += 1
             # Pick a random starting point on the sphere by taking the theta
